@@ -15,3 +15,7 @@ This mod adds to minecraft the capability to name randomly and automated every v
 
 ## License
 MIT
+
+## Mod instalation
+
+Go to **build>libs** and copy the .jar file to your current minecraft instance mod folder
