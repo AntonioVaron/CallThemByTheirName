@@ -17,22 +17,27 @@ public class VillagerHandler {
 
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        Entity entity = event.getEntity();
+        if (!event.getLevel().isClientSide()) {
+            Entity entity = event.getEntity();
 
-        if (entity instanceof Villager villager) {
-            // Solo aplicar nombres a aldeanos sin nombre personalizado
-            if (!villager.hasCustomName()) {
-                // Obtener o crear la capability
+            if (entity instanceof Villager villager) {
+                // Solo aplicar nombres a aldeanos sin nombre personalizado
                 VillagerCapability capability = VillagerCapability.getOrCreate(villager);
 
-                // Establecer el nombre personalizado
-                villager.setCustomName(Component.literal(capability.getName()));
-                villager.setCustomNameVisible(true);
+                if (!villager.hasCustomName() && (capability.getName() != null && !capability.getName().isEmpty())) {
+                    villager.setCustomName(Component.literal(capability.getName()));
+                    villager.setCustomNameVisible(true);
 
-                // Registrar información en el log
-                String type = capability.isLegendary() ? "Legendary" : "Normal";
-                String gender = capability.isMale() ? "Male" : "Female";
-                LOGGER.info("Named villager: {} ({} {})", capability.getName(), gender, type);
+                    LOGGER.info("Named villager: {} ({} {})",
+                            capability.getName(),
+                            capability.isMale() ? "Male" : "Female",
+                            capability.isLegendary() ? "Legendary" : "Normal");
+                } else {
+                    LOGGER.info("Aldeano ya tenía nombre: {} ({} {})",
+                            capability.getName(),
+                            capability.isMale() ? "Male" : "Female",
+                            capability.isLegendary() ? "Legendary" : "Normal");
+                }
             }
         }
     }
