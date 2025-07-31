@@ -3,6 +3,8 @@ package net.anse.callthembytheirname;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.attachment.IAttachmentSerializer;
@@ -91,24 +93,24 @@ public class VillagerCapability {
     }
 
     // Implementación del serializador como clase estática dentro de VillagerCapability
-    public static class VillagerAttachmentSerializer implements IAttachmentSerializer<CompoundTag, VillagerCapability> {
+    public static class VillagerAttachmentSerializer implements IAttachmentSerializer<VillagerCapability> {
 
         @Override
-        public VillagerCapability read(IAttachmentHolder holder, CompoundTag tag, HolderLookup.Provider provider) {
+        public VillagerCapability read(IAttachmentHolder holder, ValueInput input) {
             VillagerCapability capability = new VillagerCapability();
-            capability.isMale = tag.getBoolean("IsMale");
-            capability.isLegendary = tag.getBoolean("IsLegendary");
-            capability.name = tag.getString("Name");
+            capability.isMale = input.getBooleanOr("IsMale", false);
+            capability.isLegendary = input.getBooleanOr("IsLegendary", false);
+            capability.name = input.getString("Name").orElse("");
             return capability;
         }
 
         @Override
-        public @Nullable CompoundTag write(VillagerCapability attachment, HolderLookup.Provider provider) {
+        public boolean write(VillagerCapability attachment, ValueOutput output) {
             CompoundTag tag = new CompoundTag();
             tag.putBoolean("IsMale", attachment.isMale);
             tag.putBoolean("IsLegendary", attachment.isLegendary);
             tag.putString("Name", attachment.name);
-            return tag;
+            return true;
         }
     }
 }
