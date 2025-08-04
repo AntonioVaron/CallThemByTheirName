@@ -2,6 +2,8 @@ package net.anse.callthembytheirname;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -26,8 +28,25 @@ public class VillagerCapability {
     private boolean isLegendary;
     private String name;
 
+    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerCapability> CODEC =
+            StreamCodec.of(
+                    (buf, cap) -> {
+                        buf.writeBoolean(cap.isMale);
+                        buf.writeBoolean(cap.isLegendary);
+                        buf.writeUtf(cap.name);
+                    },
+                    buf -> {
+                        VillagerCapability cap = new VillagerCapability();
+                        cap.isMale = buf.readBoolean();
+                        cap.isLegendary = buf.readBoolean();
+                        cap.name = buf.readUtf();
+                        return cap;
+                    }
+            );
+
     // Constructor por defecto
     public VillagerCapability() {
+        System.out.println("[DEBUG] VillagerCapability constructor called!");
         this.isMale = random.nextBoolean(); // 50% probabilidad de ser hombre
         this.isLegendary = NameGenerator.isLegendary(DEFAULT_LEGEND_CHANCE);
 
@@ -49,6 +68,7 @@ public class VillagerCapability {
                     AttachmentType.builder(() -> new VillagerCapability())
                             .serialize(new VillagerAttachmentSerializer())
                             .copyOnDeath()
+                            .sync((holder, player) -> true, VillagerCapability.CODEC)
                             .build());
 
     // Getters y setters
@@ -101,15 +121,16 @@ public class VillagerCapability {
             capability.isMale = input.getBooleanOr("IsMale", false);
             capability.isLegendary = input.getBooleanOr("IsLegendary", false);
             capability.name = input.getString("Name").orElse("");
+            System.out.println("[DEBUG] Reading VillagerCapability from NBT!");
             return capability;
         }
 
         @Override
         public boolean write(VillagerCapability attachment, ValueOutput output) {
-            CompoundTag tag = new CompoundTag();
-            tag.putBoolean("IsMale", attachment.isMale);
-            tag.putBoolean("IsLegendary", attachment.isLegendary);
-            tag.putString("Name", attachment.name);
+            output.putBoolean("IsMale", attachment.isMale);
+            output.putBoolean("IsLegendary", attachment.isLegendary);
+            output.putString("Name", attachment.name);
+            System.out.println("[DEBUG] Writing VillagerCapability to NBT!");
             return true;
         }
     }

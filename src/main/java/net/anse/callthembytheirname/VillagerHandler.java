@@ -1,6 +1,8 @@
 package net.anse.callthembytheirname;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,7 +27,9 @@ public class VillagerHandler {
                 VillagerCapability capability = VillagerCapability.getOrCreate(villager);
 
                 if (!villager.hasCustomName() && (capability.getName() != null && !capability.getName().isEmpty())) {
-                    villager.setCustomName(Component.literal(capability.getName()));
+                    TextColor color = capability.isMale() ? TextColor.fromRgb(0x8FD2FF) : TextColor.fromRgb(0xFFCFE5); // azul o rosa
+                    Component coloredName = Component.literal(capability.getName()).setStyle(Style.EMPTY.withColor(color));
+                    villager.setCustomName(coloredName);
                     villager.setCustomNameVisible(true);
 
                     LOGGER.info("Named villager: {} ({} {})",
